@@ -1,24 +1,23 @@
 # Mindverse Development Tasks
 
-Choose one of two independent projects. Each provides a minimal starter, not a completed implementation.
+This repository is the multi-agent runtime challenge.
 
 | Project | Objective | Provided |
 | --- | --- | --- |
-| [Multi-Agent Runtime](challenge-01-multi-agent/README.md) | Coordination, durable context, RAG, user intervention and reliable execution | Editable canvas, local snapshots and a single-agent mock |
-| [Agent Studio](challenge-02-agent-studio/README.md) | Conversational scene creation, assets, cameras and visual output | Empty Three.js grid, basic canvas and text input |
+| [Multi-Agent Runtime](challenge-01-multi-agent/README.md) | Coordination, durable context, RAG, user intervention and reliable execution | Canvas, local snapshots, and the offline multi-agent runtime |
 
 ## Setup
 
-Requires Node.js 22.18+ and npm. Install inside the selected project:
+This repository contains challenge 1, the multi-agent runtime. It requires Node.js 22.18 or newer and npm. Verified with Node.js 22.23.5.
 
 ```sh
-git clone https://github.com/Azzz368/test1.git
-cd test1/challenge-01-multi-agent
+cd challenge-01-multi-agent
 npm install
+npm test
 npm run dev
 ```
 
-For the studio, use `challenge-02-agent-studio`. Default ports are 3061 and 3062 respectively. Both support `npm run build`; type checking uses `npm run typecheck` for the runtime and `npm run check` for the studio. The runtime also includes `npm test`.
+Open http://localhost:3061. Dependency versions are listed in [challenge-01-multi-agent/.env.example](challenge-01-multi-agent/.env.example). Startup details and the latest test record are in [challenge-01-multi-agent/README.md](challenge-01-multi-agent/README.md) and [challenge-01-multi-agent/docs/TEST-RESULTS.md](challenge-01-multi-agent/docs/TEST-RESULTS.md).
 
 ## Delivery
 
@@ -30,25 +29,24 @@ Paid APIs are optional; label simulated behavior. Keep credentials server-side. 
 
 ## 繁體中文
 
-兩個獨立專案擇一完成。各專案僅提供最小基礎入口，不包含完整功能。
+本倉庫是多智能體執行系統題目。
 
 | 專案 | 目標 | 已提供 |
 | --- | --- | --- |
-| [多智能體執行系統](challenge-01-multi-agent/README.md) | 協作、持久上下文、RAG、使用者介入與可靠執行 | 可編輯畫布、本機快照與單智能體模擬 |
-| [Agent 虛擬攝影棚](challenge-02-agent-studio/README.md) | 對話建場、資產、攝影機與畫面輸出 | 空白 Three.js 網格、基礎畫布與文字輸入 |
+| [多智能體執行系統](challenge-01-multi-agent/README.md) | 協作、持久上下文、RAG、使用者介入與可靠執行 | 畫布、本機快照與離線多角色執行 |
 
 ### 啟動
 
-需要 Node.js 22.18+ 與 npm，請在所選專案內安裝：
+本倉庫目前是題目一，多智能體執行系統。需要 Node.js 22.18 或更高版本與 npm。本次驗證使用 Node.js 22.23.5。
 
 ```sh
-git clone https://github.com/Azzz368/test1.git
-cd test1/challenge-01-multi-agent
+cd challenge-01-multi-agent
 npm install
+npm test
 npm run dev
 ```
 
-攝影棚請改用 `challenge-02-agent-studio`。預設連接埠分別為 3061 與 3062。兩者皆支援 `npm run build`；型別檢查分別為執行系統的 `npm run typecheck` 與攝影棚的 `npm run check`。執行系統另提供 `npm test`。
+開啟 http://localhost:3061。依賴版本見 [challenge-01-multi-agent/.env.example](challenge-01-multi-agent/.env.example)。完整啟動步驟與最近一次測試記錄見 [challenge-01-multi-agent/README.md](challenge-01-multi-agent/README.md) 與 [challenge-01-multi-agent/docs/TEST-RESULTS.md](challenge-01-multi-agent/docs/TEST-RESULTS.md)。
 
 ### 交付
 

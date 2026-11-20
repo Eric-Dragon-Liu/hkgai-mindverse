@@ -4,21 +4,23 @@
 
 Extend the standalone canvas with a recoverable multi-agent runtime. Deterministic roles and local tools are sufficient. Choose one of the two standalone projects.
 
-### Run
+### Setup
 
-Requires Node.js 22.18+ and npm. No model key or parent application is required.
+Requires Node.js 22.18 or newer and npm. The versions used here are listed in `.env.example`. No API token is required.
 
 ```sh
 cd challenge-01-multi-agent
 npm install
+npm test
+npm run typecheck
 npm run dev
 ```
 
 Open http://localhost:3061. For another port: `npm run dev -- --port 3062`.
 
+In the right-hand panel, choose 启动. The run waits at 待审批. Choose 批准导出 3 个机位 to write the local export record. 变更需求, 取消 and 恢复 exercise the other paths. Latest recorded results are in [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md).
+
 ```sh
-npm test
-npm run typecheck
 npm run build
 npm start
 ```
@@ -28,7 +30,7 @@ npm start
 - Next.js, React Flow and TypeScript canvas editing, light/dark themes, manual browser save/load and validated JSON import/export (2 MB limit).
 - Compatible snapshot exports: `CanvasNode`, `WorkflowEdge`, `CanvasSnapshot`, `parseSnapshot` and `initialSnapshot`.
 - A synchronous single-agent mock, deterministic events, a simulated failure switch and unit tests. Its display delay and stop button do not implement asynchronous execution or tool cancellation.
-- No multi-agent runtime, durable run history, recovery, approvals, long-term memory or RAG. Canvas connections are not executable dependencies; canvas saves are not runtime checkpoints.
+- The multi-agent runtime, durable run file, recovery, approvals, long-term memory and RAG now live in `src/core/runtime`. Canvas connections are still not executable dependencies; the browser canvas save is still not a runtime checkpoint.
 - No backend, authentication, real models or media generation. The local reference image is a historical custom Three.js whitebox image, not production media or a generated result.
 
 ### Project Goals
@@ -62,21 +64,23 @@ The runtime does not call Zhipu or any other model. Canvas edges are not the rol
 
 在獨立畫布中擴充可復原的多代理執行系統，可使用確定性角色與本機工具。兩個獨立專案擇一完成即可。
 
-### 執行
+### 啟動
 
-需要 Node.js 22.18+ 與 npm，不需要模型金鑰或父應用程式。
+需要 Node.js 22.18 或更高版本與 npm。本次使用的版本寫在 `.env.example`。不需要 API token。
 
 ```sh
 cd challenge-01-multi-agent
 npm install
+npm test
+npm run typecheck
 npm run dev
 ```
 
 開啟 http://localhost:3061。更換連接埠：`npm run dev -- --port 3062`。
 
+右側面板按「啟動」。執行停在「待審批」時，按「批准導出 3 個機位」寫入本機導出記錄。「變更需求」「取消」「恢復」對應其餘流程。最近一次測試記錄見 [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md)。
+
 ```sh
-npm test
-npm run typecheck
 npm run build
 npm start
 ```
@@ -86,7 +90,7 @@ npm start
 - Next.js、React Flow 與 TypeScript 畫布編輯、明暗主題、瀏覽器手動儲存／載入，以及經驗證的 JSON 匯入／匯出（上限 2 MB）。
 - 保持相容的快照匯出：`CanvasNode`、`WorkflowEdge`、`CanvasSnapshot`、`parseSnapshot`、`initialSnapshot`。
 - 同步單代理模擬、確定性事件、模擬失敗開關與單元測試。顯示延遲與停止按鈕並未實作非同步執行或工具中斷。
-- 尚無多代理執行系統、持久執行紀錄、復原、審批、長期記憶或 RAG。畫布連線不是可執行依賴；畫布存檔不是執行檢查點。
+- 多代理執行、持久執行檔、復原、審批、長期記憶與 RAG 位於 `src/core/runtime`。畫布連線仍不是可執行依賴；瀏覽器裡的畫布存檔仍不是執行檢查點。
 - 尚無後端、驗證、真實模型或媒體生成。本機參考圖為歷史自製 Three.js 白模圖，並非正式環境素材或生成結果。
 
 ### 專案目標

@@ -26,7 +26,7 @@ The export writes `started` before it commits. If the process stops there, or th
 
 ## Boundaries
 
-Browser storage still holds only the canvas and theme. Run state, memory and documents are in the server JSON file. Events are short summaries. Secrets matching common key shapes are redacted before they are stored on the run. There is no shell, no production service and no model call. The Zhipu key in `.env` is unused. The reference image remains a local sample, not a generated frame.
+Browser storage still holds only the canvas and theme. Run state, memory and documents are in the server JSON file. Events are short summaries. Secrets matching common key shapes are redacted before they are stored on the run. There is no shell, no production service and no model call. No API token is loaded. The reference image remains a local sample, not a generated frame.
 
 Canvas connections are still not execution edges. JSON import validation is unchanged and is not a full security audit. There is no login or encryption. A corrupt state file is not auto-repaired.
 
@@ -38,4 +38,4 @@ Canvas connections are still not execution edges. JSON import validation is unch
 
 分镜读取画布。检索和记忆并行。核对等待两边的结果，冲突或没有现行证据时阻塞。导出是唯一副作用，必须拿到与当前项目、需求版本和机位数量一致的审批。需求变更会使旧审批失效。导出在提交前先记下“已开始”；如果结果不确定，恢复时不会再执行一次。已提交的导出在恢复时直接视为完成。
 
-检索文字、导入内容和工具结果都不是指令。过期、已删除、不可信和其他项目的文档不能授权导出。长期记忆与文档分开，可以新增、修订和删除。工具只有四个，不允许 shell。`.env` 里的智谱密钥没有被运行流程使用。
+检索文字、导入内容和工具结果都不是指令。过期、已删除、不可信和其他项目的文档不能授权导出。长期记忆与文档分开，可以新增、修订和删除。工具只有四个，不允许 shell。运行流程不读取 API token。
