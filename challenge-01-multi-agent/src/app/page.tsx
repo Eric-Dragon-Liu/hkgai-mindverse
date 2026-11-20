@@ -7,12 +7,11 @@ import {
   type Connection, type NodeProps, type Node, type Edge,
 } from "@xyflow/react";
 import {
-  ArrowDownToLine, ArrowUpFromLine, Bot, Check, ChevronRight, CircleAlert,
-  FileText, FolderOpen, ImageIcon, Layers3, LoaderCircle, Moon, Plus,
-  Save, Send, Sun, Trash2, Video, X,
+  ArrowDownToLine, ArrowUpFromLine, ChevronRight, FileText, FolderOpen, ImageIcon, Layers3, Moon, Plus,
+  Save, Sun, Trash2, Video,
 } from "lucide-react";
 import { initialSnapshot, parseSnapshot, type CanvasNode, type CanvasSnapshot } from "../core/canvas.ts";
-import { runMockAgent, type MockAgentTrace } from "../core/mockAgent.ts";
+import { RuntimePanel } from "./RuntimePanel.tsx";
 
 type EditorNode = Node<CanvasNode["data"], "creative">;
 type EditorEdge = Edge;
@@ -21,8 +20,10 @@ const storageKey = "mindverse-challenge:canvas:v1";
 const themeKey = "mindverse-challenge:theme";
 const nodeLabels = { text: "文本", image: "图像", video: "视频", reference: "参考" };
 const statusLabels = { idle: "未执行", running: "运行中", waiting: "等待中", success: "已完成", error: "失败" };
-const phaseLabels = { received: "接收", planning: "整理", tooling: "工具", validating: "校验", completed: "完成", blocked: "阻塞" };
 const starter = structuredClone(initialSnapshot);
+starter.projectName = "未命名创意项目";
+starter.nodes[0].data = { ...starter.nodes[0].data, title: "创意简报", textContent: "安静的摄影棚，同一主体，三个机位。保持场景与主体一致。" };
+starter.nodes[1].data = { ...starter.nodes[1].data, title: "场景参考", textContent: "白模构图参考，保留空间关系与主体位置。", imageUrl: "/samples/reference.png" };
 
 function CreativeNode({ id, data, selected }: NodeProps<EditorNode>) {
   const { setNodes } = useReactFlow<EditorNode, EditorEdge>();
@@ -52,13 +53,7 @@ export default function CanvasPage() {
   const [projectName, setProjectName] = useState(starter.projectName);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [notice, setNotice] = useState("本地草稿");
-  const [instruction, setInstruction] = useState("按 B1 处理订单 SO-10482：先受理，再并行读取客户记忆和售后制度，确认方案后才允许退款。");
-  const [simulateFailure, setSimulateFailure] = useState(false);
-  const [trace, setTrace] = useState<MockAgentTrace | null>(null);
-  const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const runSequence = useRef(0);
 
   useEffect(() => {
     try {
@@ -67,7 +62,6 @@ export default function CanvasPage() {
       setTheme(next);
       document.documentElement.dataset.theme = next;
     } catch { setNotice("浏览器存储不可用，仍可导出 JSON"); }
-    return () => { if (timer.current) clearTimeout(timer.current); };
   }, []);
 
   const snapshot = (): CanvasSnapshot => parseSnapshot({ version: 1, projectName, nodes, edges });
@@ -103,12 +97,12 @@ export default function CanvasPage() {
     const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot(), null, 2)], { type: "application/json" }));
     const anchor = document.createElement("a");
     anchor.href = url; anchor.download = "mindverse-canvas.json"; anchor.click();
-    URL.revokeObjectURL(url); setNotice("已导出步骤 JSON");
+    URL.revokeObjectURL(url); setNotice("已导出画布 JSON");
   });
   const importJson = async (file?: File) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) { setNotice("导入失败：文件不能超过 2 MB"); return; }
-    try { restore(JSON.parse(await file.text())); setNotice("已导入并校验步骤"); }
+    try { restore(JSON.parse(await file.text())); setNotice("已导入并校验画布"); }
     catch { setNotice("导入失败：请检查 JSON、节点与连线结构"); }
   };
   const toggleTheme = () => {
@@ -116,17 +110,6 @@ export default function CanvasPage() {
     setTheme(next); document.documentElement.dataset.theme = next;
     act(() => localStorage.setItem(themeKey, next));
   };
-  const run = () => {
-    if (busy) return;
-    const result = runMockAgent({ runId: `mock-${++runSequence.current}`, instruction, snapshot: { version: 1, projectName, nodes, edges }, simulateFailure });
-    setTrace(null); setBusy(true);
-    timer.current = setTimeout(() => { setTrace(result); setBusy(false); timer.current = null; }, 350);
-  };
-  const cancel = () => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null; setBusy(false); setNotice("已停止本次模拟展示");
-  };
-
   return (
     <main className="workspace">
       <header className="topbar">
@@ -146,7 +129,7 @@ export default function CanvasPage() {
       </header>
 
       <div className="workspace-body">
-        <section className="canvas-area" aria-label="B1 步骤">
+        <section className="canvas-area" aria-label="创意画布">
           <div className="canvas-toolbar"><button className="primary-button" onClick={addNode}><Plus size={16} />添加节点</button><button className="icon-button" title="删除选中节点或连线" aria-label="删除选中节点或连线" disabled={!nodes.some((node) => node.selected) && !edges.some((edge) => edge.selected)} onClick={deleteSelected}><Trash2 size={16} /></button></div>
           <ReactFlow<EditorNode, EditorEdge> nodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} isValidConnection={(connection) => connection.source !== connection.target} fitView fitViewOptions={{ padding: 0.18, maxZoom: 1 }} minZoom={0.2} maxZoom={2} colorMode={theme} deleteKeyCode={["Backspace", "Delete"]} defaultEdgeOptions={{ type: "smoothstep" }}>
             <Background variant={BackgroundVariant.Dots} gap={22} size={1} />
@@ -155,28 +138,7 @@ export default function CanvasPage() {
           <div className="canvas-status"><span>{nodes.length} 个节点 · {edges.length} 条连接</span><span role="status">{notice}</span></div>
         </section>
 
-        <aside className="agent-panel" aria-label="Agent 任务面板">
-          <header className="panel-heading"><Bot size={19} /><h1>Agent</h1><span className="mode-badge">单 Agent · Mock</span></header>
-          <div className="agent-scroll">
-            <div className="session-heading"><span className="tiny-dot" />本地任务会话</div>
-            <h2>B1 订单售后退款</h2>
-            <div className="runtime-facts"><span>模型 <b>未连接</b></span><span>工具 <b>本地模拟</b></span></div>
-            {!trace && !busy && <div className="empty-run"><Layers3 size={32} strokeWidth={1} /><span>暂无运行记录</span></div>}
-            {busy && <div className="running-state" role="status"><LoaderCircle size={18} className="spinning" />正在执行本地模拟…</div>}
-            {trace && <section className="run-record" aria-label="运行记录">
-              <div className="run-summary"><span>{trace.id}</span><strong className={trace.status === "blocked" ? "error-text" : ""}>{trace.status === "completed" ? "已完成" : "已阻塞"}</strong></div>
-              <ol className="event-list">{trace.events.map((event) => <li key={event.id}>
-                <span className={`event-icon ${event.kind === "error" ? "error-text" : ""}`}>{event.kind === "error" ? <CircleAlert size={14} /> : <Check size={14} />}</span>
-                <div><span className="event-phase">{phaseLabels[event.phase]}</span><p>{event.message}</p>{event.metadata?.tool && <code>{String(event.metadata.tool)}</code>}</div>
-              </li>)}</ol>
-              {trace.output && <div className="agent-output"><div><FileText size={14} />运行结果</div><p>{trace.output}</p></div>}
-            </section>}
-          </div>
-          <form className="agent-composer" onSubmit={(event) => { event.preventDefault(); run(); }}>
-            <label className="failure-toggle"><input type="checkbox" checked={simulateFailure} disabled={busy} onChange={(event) => setSimulateFailure(event.target.checked)} />模拟工具失败</label>
-            <div className="composer-field"><textarea aria-label="任务指令" placeholder="输入任务…" value={instruction} maxLength={2000} disabled={busy} onChange={(event) => setInstruction(event.target.value)} /><div className="composer-footer"><span>{instruction.length} / 2000</span>{busy ? <button className="send-button" type="button" title="停止本次模拟" aria-label="停止本次模拟" onClick={cancel}><X size={16} /></button> : <button className="send-button" type="submit" title="运行单 Agent 模拟" aria-label="运行单 Agent 模拟" disabled={!instruction.trim()}><Send size={16} /></button>}</div></div>
-          </form>
-        </aside>
+        <RuntimePanel snapshot={snapshot} />
       </div>
     </main>
   );

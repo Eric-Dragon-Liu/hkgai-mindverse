@@ -1,57 +1,41 @@
-# Starter Architecture
+# Runtime Architecture
 
-## English
+The canvas remains the editable brief. It is not the scheduler. Role dependencies live in `src/core/runtime/engine.ts`. A run can be replayed from `data/runtime-state.json` after a refresh or process restart. Tests use an in-memory store and do not call a model.
 
-This standalone canvas adapts Mindverse concepts, not production services. It has no parent runtime imports, production API calls or implemented multi-agent runtime.
+## Roles
 
-### Current Boundaries
+| Role | Depends on | Work |
+| --- | --- | --- |
+| planner | none | Reads the canvas as data and records the current requirement |
+| researcher | planner | Retrieves project documents in parallel with memory |
+| archivist | planner | Reads that project's long-term memory |
+| reviewer | researcher and archivist | Accepts current evidence or blocks on conflict |
+| producer | reviewer and a matching approval | Writes one local export record |
 
-- `src/core/canvas.ts` owns versioned snapshots, initial data and parsing. Preserve its public exports. Parsing validates structure and clones accepted data; it is not a complete security audit or cycle detector.
-- `src/core/mockAgent.ts` synchronously returns a single-agent canvas summary and deterministic events. It has no network, storage or model dependency; simulated failure ends in `blocked`.
-- `src/app/page.tsx` owns React Flow interaction and browser persistence. Summaries reflect the snapshot at invocation. The display timer is not execution; stopping it does not interrupt a tool. Mock phases are not separate agents.
-- `src/app/globals.css` supplies styles and themes without remote font downloads. Theme documents are adapted references, not verbatim originals: [light](亮色主题界面标准1.md), [dark](暗色主题界面标准1.md).
-- `tests/canvas.test.ts` and `tests/mockAgent.test.ts` cover snapshot validation/isolation and mock behavior, not browser interaction or multi-agent reliability.
+Researcher and archivist run in the same batch. The concurrency cap is 2. A blocked role marks every downstream role skipped, so a retrieval failure never reaches export.
 
-### Data and Safety
+## Evidence and memory
 
-Browser storage holds one manually saved canvas and the theme, not runs, events, approvals or requirement versions. Import/load replaces the canvas without restoring execution; run history exists only in memory.
+Documents and memories are separate collections. Retrieval returns citations with source, version and project id. A lower version is stale, a `deletedAt` document is deleted, and instruction-like text is untrusted. Those three are reported as rejected and cannot authorize the plan. Documents from another project are omitted. Memory can be added, revised and deleted through `/api/runtime/memory`. Deleting a document does not delete memory.
 
-The mock reads the step graph and renders text; it neither executes node content nor mutates nodes. The default graph is business B1, an order-refund handoff. No image generation service is included.
+## Approval, change and recovery
 
-JSON validation and the 2 MB import limit are partial safeguards. There is no complete URL/path policy, resource isolation, authentication, encrypted storage or prompt-injection defense for a future model/tool pipeline.
+Export is the only side effect. It stays pending until an approval names `export_shot_sheet`, the same project, the current requirement version and the current shot count. Changing the requirement increments the version, marks older grants stale, and reruns review. An old grant cannot start the export.
 
-### Extension Scope
+The export writes `started` before it commits. If the process stops there, or the tool result is uncertain, recovery marks the effect uncertain and does not call the tool again. A committed export is restored as completed and is not written again. Cancellation freezes pending roles and does not continue tool calls. Search and export each retry at most 2 times. A simulated timeout counts toward that budget. The tool list is `read_canvas`, `search_documents`, `read_memory` and `export_shot_sheet`.
 
-Coordination, durable recovery, long-term memory, RAG, scoped approvals and mid-execution updates remain unimplemented; [project goals](../README.md) describe intended behavior without fixing an implementation. Document actual state transitions, persistence boundaries, duplicate-effect risks, evidence lifecycle and cancellation guarantees.
+## Boundaries
 
-Keep offline operation reproducible. Optional live adapters must keep keys server-side, validate commands and model output, restrict tools/network access and redact logs. Do not reuse production credentials or enable arbitrary code execution. Run development, tests and builds inside this package; its default port is 3061.
+Browser storage still holds only the canvas and theme. Run state, memory and documents are in the server JSON file. Events are short summaries. Secrets matching common key shapes are redacted before they are stored on the run. There is no shell, no production service and no model call. The Zhipu key in `.env` is unused. The reference image remains a local sample, not a generated frame.
+
+Canvas connections are still not execution edges. JSON import validation is unchanged and is not a full security audit. There is no login or encryption. A corrupt state file is not auto-repaired.
 
 ---
 
-## 繁體中文
+## 简体中文
 
-# 起始專案架構
+画布只保存创意简报，不负责调度。角色依赖在 `src/core/runtime/engine.ts`。运行记录写入 `data/runtime-state.json`，刷新或重启后可以恢复。测试使用内存存储，不调用模型。
 
-此獨立畫布改編自 Mindverse 概念，並非正式環境服務。沒有父專案執行期匯入、正式環境 API 呼叫，也尚未實作多代理執行系統。
+分镜读取画布。检索和记忆并行。核对等待两边的结果，冲突或没有现行证据时阻塞。导出是唯一副作用，必须拿到与当前项目、需求版本和机位数量一致的审批。需求变更会使旧审批失效。导出在提交前先记下“已开始”；如果结果不确定，恢复时不会再执行一次。已提交的导出在恢复时直接视为完成。
 
-### 目前邊界
-
-- `src/core/canvas.ts` 負責版本化快照、初始資料與解析，須保留公開匯出。解析會驗證結構並複製有效資料，但不是完整安全稽核或循環偵測器。
-- `src/core/mockAgent.ts` 同步回傳單代理畫布摘要與確定性事件，不依賴網路、儲存或模型；模擬失敗以 `blocked` 結束。
-- `src/app/page.tsx` 負責 React Flow 互動與瀏覽器儲存。摘要對應呼叫時的快照；顯示計時器不是執行程序，停止計時器不會中斷工具。模擬階段並非不同代理。
-- `src/app/globals.css` 提供樣式與主題，不下載遠端字型。主題文件為改編參考，並非逐字原文：[亮色](亮色主题界面标准1.md)、[暗色](暗色主题界面标准1.md)。
-- `tests/canvas.test.ts` 與 `tests/mockAgent.test.ts` 涵蓋快照驗證／隔離及模擬行為，不代表瀏覽器互動或多代理可靠性已獲驗證。
-
-### 資料與安全
-
-瀏覽器僅儲存一份手動畫布存檔與主題，不儲存執行、事件、審批或需求版本。匯入／載入會取代畫布，不會復原執行；執行紀錄僅存在記憶體。
-
-模擬程式讀取步驟圖並呈現文字，不執行節點內容或修改節點。預設圖是業務 B1 訂單售後退款的角色交接。未包含圖片生成服務。
-
-JSON 驗證與 2 MB 匯入上限僅提供部分保護。尚無完整網址／路徑政策、資源隔離、身分驗證、加密儲存，亦未具備未來模型／工具流程所需的提示注入防護。
-
-### 擴充範圍
-
-協作、持久復原、長期記憶、RAG、限定範圍審批與執行中更新均未實作；[專案目標](../README.md) 說明預期行為，不限定實作方式。文件應記錄實際狀態轉換、持久化邊界、重複副作用風險、證據生命週期與取消保證。
-
-維持可重現的離線執行。選用的真實模型介接須將金鑰留在伺服器端，驗證指令與模型輸出，限制工具／網路存取並遮蔽紀錄中的敏感資訊。不得沿用正式環境憑證或開放任意程式碼執行。開發、測試與建置均在本套件內執行，預設連接埠為 3061。
+检索文字、导入内容和工具结果都不是指令。过期、已删除、不可信和其他项目的文档不能授权导出。长期记忆与文档分开，可以新增、修订和删除。工具只有四个，不允许 shell。`.env` 里的智谱密钥没有被运行流程使用。

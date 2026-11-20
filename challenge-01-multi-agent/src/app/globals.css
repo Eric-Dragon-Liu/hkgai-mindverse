@@ -71,7 +71,7 @@ input, textarea { min-width: 0; }
 .node-footer { height: 36px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 10px; color: var(--muted); }
 .node-footer select { border: 0; background: var(--surface); font-size: 11px; max-width: 100px; }
 .react-flow__handle { width: 9px; height: 9px; background: var(--surface); border: 1px solid var(--muted); }
-.agent-panel { flex: 0 0 350px; width: 350px; min-width: 0; background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column; }
+.agent-panel { flex: 0 0 390px; width: 390px; min-width: 0; background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column; }
 .panel-heading { display: flex; align-items: center; gap: 9px; height: 58px; flex-shrink: 0; border-bottom: 1px solid var(--line); padding: 0 20px; }
 .panel-heading h1 { font-size: 14px; font-weight: 600; margin: 0; }
 .mode-badge { margin-left: auto; font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; white-space: nowrap; }
@@ -106,3 +106,13 @@ input, textarea { min-width: 0; }
 .composer-field textarea { display: block; width: 100%; height: 82px; resize: none; background: transparent; border: 0; padding: 12px; font-size: 12px; line-height: 1.8; }
 .composer-footer { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 8px 12px; color: var(--muted); font-size: 10px; }
 .send-button { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 5px; background: var(--accent); color: var(--inverse); }
+.runtime-note { margin: 0 0 12px; color: var(--muted); line-height: 1.6; }
+.role-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin: 0 0 16px; padding: 0; }
+.role-list li { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.role-list b { font-weight: 500; }
+.memory-box { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.memory-box button, .text-button, .runtime-actions button { border: 1px solid var(--line); background: transparent; border-radius: 5px; padding: 4px 8px; color: var(--text); }
+.memory-field { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 6px; }
+.memory-field input { flex: 1; border: 0; background: transparent; padding: 6px; }
+.runtime-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.composer-footer .text-button { background: var(--accent); color: var(--inverse); }
