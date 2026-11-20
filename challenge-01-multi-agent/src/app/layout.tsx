@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Mindverse | Agent 运行时挑战",
-  description: "独立画布与单 Agent 模拟起步包",
+  description: "B1 订单售后退款的多 Agent 运行起步包",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -23,9 +23,6 @@ const nodeLabels = { text: "文本", image: "图像", video: "视频", reference
 const statusLabels = { idle: "未执行", running: "运行中", waiting: "等待中", success: "已完成", error: "失败" };
 const phaseLabels = { received: "接收", planning: "整理", tooling: "工具", validating: "校验", completed: "完成", blocked: "阻塞" };
 const starter = structuredClone(initialSnapshot);
-starter.projectName = "未命名创意项目";
-starter.nodes[0].data = { ...starter.nodes[0].data, title: "创意简报", textContent: "安静的摄影棚，同一主体，三个机位。保持场景与主体一致。" };
-starter.nodes[1].data = { ...starter.nodes[1].data, title: "场景参考", textContent: "白模构图参考，保留空间关系与主体位置。", imageUrl: "/samples/reference.png" };
 
 function CreativeNode({ id, data, selected }: NodeProps<EditorNode>) {
   const { setNodes } = useReactFlow<EditorNode, EditorEdge>();
@@ -55,7 +52,7 @@ export default function CanvasPage() {
   const [projectName, setProjectName] = useState(starter.projectName);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [notice, setNotice] = useState("本地草稿");
-  const [instruction, setInstruction] = useState("整理当前画布，列出创意简报和参考素材。");
+  const [instruction, setInstruction] = useState("按 B1 处理订单 SO-10482：先受理，再并行读取客户记忆和售后制度，确认方案后才允许退款。");
   const [simulateFailure, setSimulateFailure] = useState(false);
   const [trace, setTrace] = useState<MockAgentTrace | null>(null);
   const [busy, setBusy] = useState(false);
@@ -106,12 +103,12 @@ export default function CanvasPage() {
     const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot(), null, 2)], { type: "application/json" }));
     const anchor = document.createElement("a");
     anchor.href = url; anchor.download = "mindverse-canvas.json"; anchor.click();
-    URL.revokeObjectURL(url); setNotice("已导出画布 JSON");
+    URL.revokeObjectURL(url); setNotice("已导出步骤 JSON");
   });
   const importJson = async (file?: File) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) { setNotice("导入失败：文件不能超过 2 MB"); return; }
-    try { restore(JSON.parse(await file.text())); setNotice("已导入并校验画布"); }
+    try { restore(JSON.parse(await file.text())); setNotice("已导入并校验步骤"); }
     catch { setNotice("导入失败：请检查 JSON、节点与连线结构"); }
   };
   const toggleTheme = () => {
@@ -149,7 +146,7 @@ export default function CanvasPage() {
       </header>
 
       <div className="workspace-body">
-        <section className="canvas-area" aria-label="创意画布">
+        <section className="canvas-area" aria-label="B1 步骤">
           <div className="canvas-toolbar"><button className="primary-button" onClick={addNode}><Plus size={16} />添加节点</button><button className="icon-button" title="删除选中节点或连线" aria-label="删除选中节点或连线" disabled={!nodes.some((node) => node.selected) && !edges.some((edge) => edge.selected)} onClick={deleteSelected}><Trash2 size={16} /></button></div>
           <ReactFlow<EditorNode, EditorEdge> nodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} isValidConnection={(connection) => connection.source !== connection.target} fitView fitViewOptions={{ padding: 0.18, maxZoom: 1 }} minZoom={0.2} maxZoom={2} colorMode={theme} deleteKeyCode={["Backspace", "Delete"]} defaultEdgeOptions={{ type: "smoothstep" }}>
             <Background variant={BackgroundVariant.Dots} gap={22} size={1} />
@@ -162,7 +159,7 @@ export default function CanvasPage() {
           <header className="panel-heading"><Bot size={19} /><h1>Agent</h1><span className="mode-badge">单 Agent · Mock</span></header>
           <div className="agent-scroll">
             <div className="session-heading"><span className="tiny-dot" />本地任务会话</div>
-            <h2>画布整理助手</h2>
+            <h2>B1 订单售后退款</h2>
             <div className="runtime-facts"><span>模型 <b>未连接</b></span><span>工具 <b>本地模拟</b></span></div>
             {!trace && !busy && <div className="empty-run"><Layers3 size={32} strokeWidth={1} /><span>暂无运行记录</span></div>}
             {busy && <div className="running-state" role="status"><LoaderCircle size={18} className="spinning" />正在执行本地模拟…</div>}

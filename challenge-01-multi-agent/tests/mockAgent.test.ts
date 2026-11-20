@@ -3,7 +3,7 @@ import test from "node:test";
 import { initialSnapshot } from "../src/core/canvas.ts";
 import { runMockAgent } from "../src/core/mockAgent.ts";
 
-const request = { runId: "run-1", instruction: "整理参考素材", snapshot: initialSnapshot };
+const request = { runId: "run-1", instruction: "处理订单 SO-10482 的退款", snapshot: initialSnapshot };
 
 test("single-agent mock is deterministic and does not mutate its input", () => {
   const before = structuredClone(request);
@@ -15,7 +15,7 @@ test("single-agent mock is deterministic and does not mutate its input", () => {
   assert.deepEqual(trace.events.map((event) => event.phase), ["received", "planning", "tooling", "validating", "completed"]);
   assert.equal(new Set(trace.events.map((event) => event.id)).size, trace.events.length);
   assert.ok(trace.events.every((event) => event.runId === request.runId));
-  assert.match(trace.output!, /Creative Brief/);
+  assert.match(trace.output!, /1 受理/);
 });
 
 test("invalid requests stop before any tool call", () => {

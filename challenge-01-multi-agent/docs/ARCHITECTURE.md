@@ -16,7 +16,7 @@ This standalone canvas adapts Mindverse concepts, not production services. It ha
 
 Browser storage holds one manually saved canvas and the theme, not runs, events, approvals or requirement versions. Import/load replaces the canvas without restoring execution; run history exists only in memory.
 
-The mock reads canvas structure and renders text; it neither executes node content nor mutates nodes. The local reference image is a historical custom Three.js whitebox image, not production media. No image generation service is included.
+The mock reads the step graph and renders text; it neither executes node content nor mutates nodes. The default graph is business B1, an order-refund handoff. No image generation service is included.
 
 JSON validation and the 2 MB import limit are partial safeguards. There is no complete URL/path policy, resource isolation, authentication, encrypted storage or prompt-injection defense for a future model/tool pipeline.
 
@@ -46,7 +46,7 @@ Keep offline operation reproducible. Optional live adapters must keep keys serve
 
 瀏覽器僅儲存一份手動畫布存檔與主題，不儲存執行、事件、審批或需求版本。匯入／載入會取代畫布，不會復原執行；執行紀錄僅存在記憶體。
 
-模擬程式讀取畫布結構並呈現文字，不執行節點內容或修改節點。本機參考圖為歷史自製 Three.js 白模圖，並非正式環境素材；未包含圖片生成服務。
+模擬程式讀取步驟圖並呈現文字，不執行節點內容或修改節點。預設圖是業務 B1 訂單售後退款的角色交接。未包含圖片生成服務。
 
 JSON 驗證與 2 MB 匯入上限僅提供部分保護。尚無完整網址／路徑政策、資源隔離、身分驗證、加密儲存，亦未具備未來模型／工具流程所需的提示注入防護。
 

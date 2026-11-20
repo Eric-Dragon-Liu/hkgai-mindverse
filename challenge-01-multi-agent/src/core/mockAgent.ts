@@ -49,14 +49,14 @@ export function runMockAgent(request: MockAgentRequest): MockAgentTrace {
   try {
     snapshot = parseSnapshot(request.snapshot);
   } catch {
-    return blocked("画布快照校验失败，未执行工具。");
+    return blocked("步骤快照校验失败，未执行工具。");
   }
   if (!snapshot.nodes.length) return blocked("请先添加至少一个节点。");
-  emit("planning", "stage", "整理当前画布，生成固定格式摘要。", { nodeCount: snapshot.nodes.length });
+  emit("planning", "stage", "整理当前步骤，生成固定格式摘要。", { nodeCount: snapshot.nodes.length });
   emit("tooling", "tool", "调用本地 summarize_canvas 模拟工具。", { tool: "summarize_canvas", attempt: 1 });
   if (request.simulateFailure) return blocked("模拟工具失败；起步包不自动重试。");
-  const output = `任务：${instruction}\n画布：${snapshot.projectName}\n节点：${snapshot.nodes.map((node) => node.data.title).join("、")}\n连接：${snapshot.edges.length} 条\n结果：已完成本地结构摘要，未调用模型或生成媒体。`;
-  emit("validating", "validation", "摘要已生成，未修改画布或执行外部副作用。");
+  const output = `任务：${instruction}\n业务：${snapshot.projectName}\n步骤：${snapshot.nodes.map((node) => node.data.title).join("、")}\n交接：${snapshot.edges.length} 条\n结果：已完成本地结构摘要，未调用模型或生成媒体。`;
+  emit("validating", "validation", "摘要已生成，未修改步骤或执行外部副作用。");
   emit("completed", "stage", "模拟运行完成。");
   return { id: request.runId, mode: "single-agent-mock", status: "completed", events, output };
 }

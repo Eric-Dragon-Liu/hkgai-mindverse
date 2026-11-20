@@ -2,7 +2,7 @@
 
 ## English
 
-Extend the standalone canvas with a recoverable multi-agent runtime. Deterministic roles and local tools are sufficient. Choose one of the two standalone projects.
+Build a recoverable multi-agent runtime for business B1, order after-sales refund. Deterministic roles and local tools are sufficient.
 
 ### Run
 
@@ -29,7 +29,7 @@ npm start
 - Compatible snapshot exports: `CanvasNode`, `WorkflowEdge`, `CanvasSnapshot`, `parseSnapshot` and `initialSnapshot`.
 - A synchronous single-agent mock, deterministic events, a simulated failure switch and unit tests. Its display delay and stop button do not implement asynchronous execution or tool cancellation.
 - No multi-agent runtime, durable run history, recovery, approvals, long-term memory or RAG. Canvas connections are not executable dependencies; canvas saves are not runtime checkpoints.
-- No backend, authentication, real models or media generation. The local reference image is a historical custom Three.js whitebox image, not production media or a generated result.
+- No backend, authentication, real models or media generation. The sample case is business B1, an order refund handled by five roles.
 
 ### Project Goals
 
@@ -52,7 +52,7 @@ Update the [architecture](docs/ARCHITECTURE.md) with actual boundaries, persiste
 
 ### 可靠的多智能體執行系統
 
-在獨立畫布中擴充可復原的多代理執行系統，可使用確定性角色與本機工具。兩個獨立專案擇一完成即可。
+為業務 B1「訂單售後退款」建立可復原的多代理執行系統，可使用確定性角色與本機工具。
 
 ### 執行
 
@@ -79,7 +79,7 @@ npm start
 - 保持相容的快照匯出：`CanvasNode`、`WorkflowEdge`、`CanvasSnapshot`、`parseSnapshot`、`initialSnapshot`。
 - 同步單代理模擬、確定性事件、模擬失敗開關與單元測試。顯示延遲與停止按鈕並未實作非同步執行或工具中斷。
 - 尚無多代理執行系統、持久執行紀錄、復原、審批、長期記憶或 RAG。畫布連線不是可執行依賴；畫布存檔不是執行檢查點。
-- 尚無後端、驗證、真實模型或媒體生成。本機參考圖為歷史自製 Three.js 白模圖，並非正式環境素材或生成結果。
+- 尚無後端、驗證、真實模型或媒體生成。範例業務為 B1 訂單售後退款，由五個角色處理。
 
 ### 專案目標
 
