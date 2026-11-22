@@ -56,6 +56,71 @@ In the right-hand panel, start a run for project `studio`. Planner, researcher a
 
 The runtime does not call Zhipu or any other model. Canvas edges are not the role graph. Dependencies are Next.js, React, React Flow and Lucide, as listed in `package.json`. The reference image is the starter's local sample.
 
+### Project structure
+
+```text
+challenge-01-multi-agent/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── runtime/
+│   │   │       ├── route.ts                 start, approve, change, cancel, recover
+│   │   │       └── memory/
+│   │   │           └── route.ts             create, revise, and delete memory
+│   │   ├── page.tsx                         canvas editor
+│   │   ├── RuntimePanel.tsx                 run, approval, and memory panel
+│   │   ├── layout.tsx
+│   │   └── globals.css
+│   └── core/
+│       ├── canvas.ts                        snapshot contract
+│       ├── mockAgent.ts                     original single-agent mock
+│       └── runtime/
+│           ├── engine.ts                    role dependencies and transitions
+│           ├── store.ts                     memory, documents, and export records
+│           ├── fileStore.ts                 atomic JSON save
+│           └── serverStore.ts               server-side store
+├── tests/
+│   ├── canvas.test.ts
+│   ├── mockAgent.test.ts
+│   └── runtime.test.ts
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── TEST-RESULTS.md
+├── public/
+│   └── samples/
+│       └── reference.png
+└── data/
+    └── runtime-state.json                   local run file, gitignored
+```
+
+The canvas files do not schedule agents. `engine.ts` owns the role graph. `store.ts` owns both collections. `fileStore.ts` writes them to `data/runtime-state.json`.
+
+### How the multi-agent runtime works
+
+Five deterministic roles run without a model. Their dependencies are fixed in `engine.ts`:
+
+| Role | Waits for | Result |
+| --- | --- | --- |
+| planner | nothing | Reads the canvas as data and records the current requirement |
+| researcher | planner | Retrieves project documents; runs beside the archivist |
+| archivist | planner | Reads this project's long-term memory |
+| reviewer | researcher and archivist | Accepts current evidence, or blocks on conflict |
+| producer | reviewer and a matching approval | Writes one local export record |
+
+Researcher and archivist share one batch. The concurrency cap is 2. If researcher or archivist blocks, reviewer and producer are skipped, so a retrieval failure cannot reach export. Each tool may retry twice. A simulated timeout consumes that same budget. The only tools are `read_canvas`, `search_documents`, `read_memory`, and `export_shot_sheet`.
+
+Export stays pending until an approval names `export_shot_sheet`, the same project, the current requirement version, and the current shot count. Changing the requirement increments the version and marks older grants stale. The export is saved as `started` before it becomes `committed`. Recovery does not call the tool again when that record is `committed`, `started`, or `uncertain`. Cancellation stops pending roles and does not continue tool calls.
+
+Retrieved text is evidence, not an instruction. A lower document version is stale, a document with `deletedAt` is deleted, and instruction-like text is untrusted. Those three are counted as rejected. Documents from another project are omitted.
+
+### How memory works
+
+Long-term memory and RAG documents are separate arrays in `store.ts`. A memory record is `{ id, projectId, body, revision, deletedAt }`. A document record adds `lineageId`, `title`, `source`, `version`, and `body`.
+
+`createMemory`, `reviseMemory`, and `deleteMemory` change only the memory array. Revision increments on each edit. Delete sets `deletedAt` and leaves the row in the file. The archivist calls `read_memory`, which returns non-deleted rows for the current project only. Nothing in retrieval writes a document into memory, and deleting a document does not delete a memory.
+
+The panel calls `POST`, `PATCH`, and `DELETE` on `/api/runtime/memory`. Both collections are stored together in `data/runtime-state.json`. That file is created on first server start and is not committed.
+
 ---
 
 ## 繁體中文
@@ -115,3 +180,68 @@ npm start
 右側面板以 `studio` 專案啟動。分鏡、檢索與記憶完成後進入核對；匯出前必須核准畫面上的專案、需求版本與機位數量。執行中可以變更需求、取消或恢復。證據會顯示來源與版本，過期、已刪除和不可信文件只計入拒絕。長期記憶與這些文件分開編輯。伺服器狀態在 `data/runtime-state.json`，不進入 Git。
 
 此執行流程不呼叫智譜或其他模型。畫布連線不是角色依賴。依賴為 `package.json` 中的 Next.js、React、React Flow 與 Lucide。參考圖是起步包自帶的本地圖片。
+
+### 專案結構
+
+```text
+challenge-01-multi-agent/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── runtime/
+│   │   │       ├── route.ts                 啟動、批准、變更、取消、恢復
+│   │   │       └── memory/
+│   │   │           └── route.ts             新增、修訂與刪除記憶
+│   │   ├── page.tsx                         畫布編輯
+│   │   ├── RuntimePanel.tsx                 執行、審批與記憶面板
+│   │   ├── layout.tsx
+│   │   └── globals.css
+│   └── core/
+│       ├── canvas.ts                        快照契約
+│       ├── mockAgent.ts                     原本的單代理模擬
+│       └── runtime/
+│           ├── engine.ts                    角色依賴與狀態轉換
+│           ├── store.ts                     記憶、文件與匯出記錄
+│           ├── fileStore.ts                 原子寫入 JSON
+│           └── serverStore.ts               伺服器端儲存
+├── tests/
+│   ├── canvas.test.ts
+│   ├── mockAgent.test.ts
+│   └── runtime.test.ts
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── TEST-RESULTS.md
+├── public/
+│   └── samples/
+│       └── reference.png
+└── data/
+    └── runtime-state.json                   本機執行檔，不進入 Git
+```
+
+畫布檔案不負責調度。`engine.ts` 持有角色圖。`store.ts` 持有兩份資料。`fileStore.ts` 把它們寫入 `data/runtime-state.json`。
+
+### 多智能體如何實作
+
+五個確定性角色不呼叫模型。依賴固定在 `engine.ts`：
+
+| 角色 | 等待 | 結果 |
+| --- | --- | --- |
+| 分鏡 planner | 無 | 把畫布當成資料讀取，並記下目前需求 |
+| 檢索 researcher | 分鏡 | 檢索本專案文件；與記憶角色同一批執行 |
+| 記憶 archivist | 分鏡 | 讀取本專案的長期記憶 |
+| 核對 reviewer | 檢索與記憶 | 採用現行證據，或因衝突而阻塞 |
+| 匯出 producer | 核對與一份匹配的審批 | 寫入一筆本機匯出記錄 |
+
+檢索與記憶同一批執行，並行上限為 2。任一上游阻塞時，核對與匯出會被跳過，因此檢索失敗不會到達匯出。每個工具最多重試 2 次。模擬逾時也計入這個上限。允許的工具只有 `read_canvas`、`search_documents`、`read_memory` 與 `export_shot_sheet`。
+
+匯出會停在待審批，直到審批寫明 `export_shot_sheet`、同一個專案、目前需求版本與目前機位數量。變更需求會把版本加一，並使舊審批失效。匯出先存成 `started`，成功後才成為 `committed`。復原時，狀態為 `committed`、`started` 或 `uncertain` 的記錄不會再次呼叫工具。取消會停下尚未執行的角色，不再繼續呼叫工具。
+
+檢索到的文字是證據，不是指令。較低的文件版本視為過期，帶有 `deletedAt` 的文件視為已刪除，帶有指令口吻的文字視為不可信。這三類只計入拒絕。其他專案的文件不會返回。
+
+### 記憶如何實作
+
+長期記憶與 RAG 文件是 `store.ts` 裡的兩個陣列。記憶記錄為 `{ id, projectId, body, revision, deletedAt }`。文件記錄另外包含 `lineageId`、`title`、`source`、`version` 與 `body`。
+
+`createMemory`、`reviseMemory` 與 `deleteMemory` 只改記憶陣列。每次修訂都會把 `revision` 加一。刪除只設定 `deletedAt`，該列仍留在檔案中。記憶角色呼叫 `read_memory`，只取回目前專案裡未刪除的列。檢索不會把文件寫進記憶，刪除文件也不會刪除記憶。
+
+面板對 `/api/runtime/memory` 發送 `POST`、`PATCH` 與 `DELETE`。兩份資料一起存在 `data/runtime-state.json`。伺服器第一次啟動時建立該檔，且不會提交到 Git。
